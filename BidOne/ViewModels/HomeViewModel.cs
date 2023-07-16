@@ -18,7 +18,7 @@ namespace BidOne.ViewModels
         public string Firstname { get; set; }
 
         [Required]
-        [EmailAddress(ErrorMessage = "Lastname cannot be longer than 20 characters.")]
+        [StringLength(20, ErrorMessage = "Firstname cannot be longer than 20 characters.")]
         [Display(Name = "Lastname")]
         public string Lastname { get; set; }
 

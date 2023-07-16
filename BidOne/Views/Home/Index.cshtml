@@ -9,6 +9,10 @@
 <body>
     <div class="text-center">
         <h1 class="display-4">Welcome</h1>
+        @if (ViewData.ModelState.Any())
+        {
+            await Html.RenderPartialAsync("_message", ViewData.ModelState);
+        }
         <form asp-action="Signup" asp-antiforgery="true" autocomplete="off" method="post">
             <div class="form-group">
                 <input asp-for="RegistertViewModel.Firstname" class="form-control" placeholder="Enter your firstname" />

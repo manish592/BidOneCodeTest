@@ -1,7 +1,11 @@
 ﻿using BidOne.Models;
+using BidOne.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Bidone.Helpers;
 using System.Diagnostics;
+using System.Net;
+using System.Text;
 
 namespace BidOne.Controllers
 {
@@ -13,42 +17,34 @@ namespace BidOne.Controllers
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            APIURL = configuration.GetSection("API").GetSection("APIURL").Value;
+            //APIURL = configuration.GetSection("API").GetSection("APIURL").Value;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Signup(ApplicationUserModel applicationmodel)
+        public async Task<IActionResult> Signup(RegistertViewModel registertViewModel)
         {
             if (ModelState.IsValid)
             {
-                ApplicationUserModel Getapplicationmodel = new ApplicationUserModel();
                 HttpClient client = new HttpClient();
-                HttpResponseMessage response = client.GetAsync(APIURL + string.Format("Api/Home/FormSubmit?Firstname={0}&Lastname={1}", applicationmodel.Firstname, applicationmodel.Lastname)).Result;
+                HttpResponseMessage response = client.GetAsync("https://localhost:7047/" + string.Format("Home/FormSubmits?Firstname={0}&Lastname={1}", registertViewModel.Firstname, registertViewModel.Lastname)).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    Getapplicationmodel = JsonConvert.DeserializeObject<ApplicationUserModel>(response.Content.ReadAsStringAsync().Result);
-                    _logger.LogInformation($"Succesfull Login UserName {Getapplicationmodel.Firstname}");
-                    //if (receivedReservation.status.ToString() == "1")
-                    //{
-                    //    ViewBag.UserName_vch = receivedReservation.UserName_vch;
-                    //    HttpContext.Session.SetString(SessionKeyName, receivedReservation.UserName_vch);
-                    //    return RedirectToAction("index", "Home");
-                    //}
-                    //else
-                    //{
-                    //    ModelState.AddModelError(EnumAlert.Info.ToString(), "Wrong Username or Password");
-                    //    return View(viewModel);
-                    //}
+                    string responseBody = await response.Content.ReadAsStringAsync();                  
+                    _logger.LogInformation($"Succesfull Getting Json {responseBody}");
+                    var fileName = "test.txt";
+                    var mimeType = "text/plain";
+                    var fileBytes = Encoding.ASCII.GetBytes(responseBody);                    
+                    return new FileContentResult(fileBytes, mimeType)
+                    {
+                        FileDownloadName = fileName
+                    };
                 }
             }
-            return View(applicationmodel);
+			ModelState.Remove("Firstname");
+			ModelState.Remove("Lastname");
+			ModelState.AddModelError(EnumAlert.Message.ToString(), "File has been Downloded successfully.");
+			return View(registertViewModel);
         }
-
-
-
-
-
-
 
         public IActionResult Index()
         {
